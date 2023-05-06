@@ -20,21 +20,27 @@ const getAllProduct = async (req, res) => {
     queryObject.name = { $regex: name, $options: "i" };
   }
   if (numericFilters) {
-    const operator = {
+    const operatorMap = {
       ">": "$gt",
       ">=": "$gte",
       "<": "$lt",
       "<=": "$lte",
-      ">": "$eq",
+      "=": "$eq",
     };
     const regEx = /\b(<|>|<=|>=|=)\b/g;
     let filters = numericFilters.replace(
       regEx,
-      (match) => `-${operator[match]}-`
+      (match) => `-${operatorMap[match]}-`
     );
-    console.log(filters);
+    const options=['price', 'rating']
+    filters = filters.split(",").forEach(item => {
+      
+      const[faild,operator,value]= item.split('-')
+      if(options.includes(faild)){
+        queryObject[faild] = { [operator] : Number( value) }; 
+      }
+    });
   }
-
   const result = Product.find(queryObject);
   if (sort) {
     // console.log(sort);
